@@ -22,9 +22,12 @@ CLAIR=$4
 resp=''
 high_vulnerabilities_found=0
 
+echo "http://${REGISTRY}/v2/${IMAGE}/manifests/${TAG}"
+
 for blobsum in $(curl -s http://${REGISTRY}/v2/${IMAGE}/manifests/${TAG} | grep blobSum | cut -d'"' -f4); do
 
-  #echo $blobsum
+  echo $blobsum
+
   curl "http://${CLAIR}/v1/layers/${blobsum}?vulnerabilities" | jq | grep -B 5 -A 17 'Severity": "High'
 
   resp_count=$(curl -s "http://${CLAIR}/v1/layers/${blobsum}?vulnerabilities" | jq | grep -B 5 -A 17 'Severity": "High' | wc -c)
