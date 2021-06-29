@@ -28,7 +28,8 @@ for blobsum in $(curl -s http://${REGISTRY}/v2/${IMAGE}/manifests/${TAG} | grep 
 
   echo $blobsum
 
-  curl "http://${CLAIR}/v1/layers/${blobsum}?vulnerabilities" | jq | grep -B 5 -A 17 'Severity": "High'
+  #curl "http://${CLAIR}/v1/layers/${blobsum}?vulnerabilities" | jq | grep -B 5 -A 17 'Severity": "High'
+  curl "http://${CLAIR}/v1/layers/${blobsum}?vulnerabilities" | jq | grep -B 5 -A 17 'Severity": "'
 
   resp_count=$(curl -s "http://${CLAIR}/v1/layers/${blobsum}?vulnerabilities" | jq | grep -B 5 -A 17 'Severity": "High' | wc -c)
 
