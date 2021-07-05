@@ -23,16 +23,16 @@ echo "manifests = ${manifests}"
 
 echo "===START manifests response"
 
-curl -sv ${manifests}
+curl -svL ${manifests}
 
 echo "===END manifests response"
 
-for layer in $(curl -s ${manifests} | grep blobSum | cut -d'"' -f4); do
+for layer in $(curl -svL ${manifests} | grep digest | cut -d'"' -f4); do
 
-  echo "Indexing layer ${layer} ==> {\"Layer\":{\"Name\":\"${layer}\",\"Path\":\"http://${REGISTRY}/v2/${IMAGE}/blobs/${layer}\",\"Format\":\"Docker\"}}"
+  echo "Indexing layer ${layer} ==> {\"Layer\":{\"Name\":\"${layer}\",\"Path\":\"http://${REGISTRY}/repository/docker-registry-group/v2/${IMAGE}/digest/${layer}\",\"Format\":\"Docker\"}}"
 
   # let CLAIR analyze docker image composed by only one "scannable" layer
-  curl -s -X POST http://${CLAIR}/v1/layers -d "{\"Layer\":{\"Name\":\"${layer}\",\"Path\":\"http://${REGISTRY}/v2/${IMAGE}/blobs/${layer}\",\"Format\":\"Docker\"}}"
+  curl -s -X POST http://${CLAIR}/v1/layers -d "{\"Layer\":{\"Name\":\"${layer}\",\"Path\":\"http://${REGISTRY}/repository/docker-registry-group/v2/${IMAGE}/digest/${layer}\",\"Format\":\"Docker\"}}"
 
   # get a result of found vulnerabilities in the layer by calling the endpoint http://${CLAIR}/v1/layers/${layer}
   echo "Getting results of found vulnerabilities in the layer ${layer}"
