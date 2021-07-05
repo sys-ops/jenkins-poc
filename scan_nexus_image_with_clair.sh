@@ -23,11 +23,11 @@ echo "manifests = ${manifests}"
 
 echo "===START manifests response"
 
-curl -svL ${manifests}
+curl -svL ${manifests} | jq
 
 echo "===END manifests response"
 
-for layer in $(curl -svL ${manifests} | grep digest | cut -d'"' -f4); do
+for layer in $(curl -svL ${manifests} | jq | grep digest | cut -d'"' -f4); do
 
   echo "Indexing layer ${layer} ==> {\"Layer\":{\"Name\":\"${layer}\",\"Path\":\"http://${REGISTRY}/repository/docker-registry-group/v2/${IMAGE}/digest/${layer}\",\"Format\":\"Docker\"}}"
 
