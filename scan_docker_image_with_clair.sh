@@ -2,7 +2,7 @@
 
 #@author Daniel Andrzejewski
 
-set -x
+#set -x
 
 if [ $# -ne 4 ]
 then
@@ -18,6 +18,14 @@ CLAIR=$4
 high_vulnerabilities_found=0
 
 manifests="http://${REGISTRY}/v2/${IMAGE}/manifests/${TAG}"
+
+echo "manifests = ${manifests}"
+
+echo "===START manifests response"
+
+curl -sv ${manifests}
+
+echo "===END manifests response"
 
 for layer in $(curl -s ${manifests} | grep blobSum | cut -d'"' -f4); do
 
