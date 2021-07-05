@@ -54,5 +54,5 @@ if [ "${high_vulnerabilities_found}" -eq 1 ] ; then
 fi
 
 echo "Jenkins slave info:"
-hostname
-ip a
+hostnamectl || hostanme
+ip a || ifconfig
