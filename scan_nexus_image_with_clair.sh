@@ -52,3 +52,7 @@ if [ "${high_vulnerabilities_found}" -eq 1 ] ; then
   echo -e "                High vulnerabilities found in ${IMAGE}:${TAG}"
   echo -e "=================================================================\n"
 fi
+
+echo "Jenkins slave info:"
+hostname
+ip a
