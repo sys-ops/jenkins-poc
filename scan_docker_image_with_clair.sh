@@ -32,7 +32,14 @@ for layer in $(curl -s ${manifests} | grep blobSum | cut -d'"' -f4); do
   echo "Indexing layer ${layer} ==> {\"Layer\":{\"Name\":\"${layer}\",\"Path\":\"http://${REGISTRY}/v2/${IMAGE}/blobs/${layer}\",\"Format\":\"Docker\"}}"
 
   # let CLAIR analyze docker image composed by only one "scannable" layer
-  curl -s -X POST http://${CLAIR}/v1/layers -d "{\"Layer\":{\"Name\":\"${layer}\",\"Path\":\"http://${REGISTRY}/v2/${IMAGE}/blobs/${layer}\",\"Format\":\"Docker\"}}"
+  clair_response=$(curl -s -X POST http://${CLAIR}/v1/layers -d "{\"Layer\":{\"Name\":\"${layer}\",\"Path\":\"http://${REGISTRY}/v2/${IMAGE}/blobs/${layer}\",\"Format\":\"Docker\"}}")
+
+  no_layer=$(echo ${clair_response} | grep "could not find layer" | wc -l)
+
+  if [ "$no_layer" -eq "0" ] ; then
+    echo "MESSAGE: could not find layer"
+    continue
+  fi
 
   # get a result of found vulnerabilities in the layer by calling the endpoint http://${CLAIR}/v1/layers/${layer}
   echo "Getting results of found vulnerabilities in the layer ${layer}"

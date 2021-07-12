@@ -27,12 +27,19 @@ curl -svL ${manifests} | jq
 
 echo "===END manifests response"
 
-for layer in $(curl -svL ${manifests} | jq | grep digest | cut -d'"' -f4); do
+for layer in $(curl -sL ${manifests} | jq | grep digest | cut -d'"' -f4); do
 
   echo "Indexing layer ${layer} ==> {\"Layer\":{\"Name\":\"${layer}\",\"Path\":\"http://${REGISTRY}/repository/docker-registry-group/v2/${IMAGE}/digest/${layer}\",\"Format\":\"Docker\"}}"
 
   # let CLAIR analyze docker image composed by only one "scannable" layer
-  curl -s -X POST http://${CLAIR}/v1/layers -d "{\"Layer\":{\"Name\":\"${layer}\",\"Path\":\"http://${REGISTRY}/repository/docker-registry-group/v2/${IMAGE}/digest/${layer}\",\"Format\":\"Docker\"}}"
+  clair_response=$(curl -s -X POST http://${CLAIR}/v1/layers -d "{\"Layer\":{\"Name\":\"${layer}\",\"Path\":\"http://${REGISTRY}/repository/docker-registry-group/v2/${IMAGE}/digest/${layer}\",\"Format\":\"Docker\"}}")
+
+  no_layer=$(echo ${clair_response} | grep "could not find layer" | wc -l)
+
+  if [ "$no_layer" -eq "0" ] ; then
+    echo "MESSAGE: could not find layer"
+    continue
+  fi
 
   # get a result of found vulnerabilities in the layer by calling the endpoint http://${CLAIR}/v1/layers/${layer}
   echo "Getting results of found vulnerabilities in the layer ${layer}"
@@ -54,5 +61,7 @@ if [ "${high_vulnerabilities_found}" -eq 1 ] ; then
 fi
 
 echo "Jenkins slave info:"
+export PATH=$PATH:/usr/sbin
+env
 hostnamectl || hostanme
 ip a || ifconfig
