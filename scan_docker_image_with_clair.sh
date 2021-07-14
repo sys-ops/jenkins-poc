@@ -27,7 +27,21 @@ curl -sv ${manifests}
 
 echo "===END manifests response"
 
-for layer in $(curl -s ${manifests} | grep blobSum | cut -d'"' -f4); do
+schema_version=$(curl -s "http://${REGISTRY}/v2/${IMAGE}/manifests/${TAG}" | jq -r '.schemaVersion')
+
+if [ -z "${schema_version}" ] ; then
+  echo "Cannot get schema version from ${REGISTRY} registry!"
+  exit 2
+fi
+
+if [ "${schema_version}" -ne "1" ] && [ "${schema_version}" -ne "2" ] ; then
+  echo "Schema '${schema_version}' not supported!"
+  exit 2
+fi
+
+# skip a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4 layer, which is an "empty layer" entry
+
+for layer in $(curl -s ${manifests} | jq -r '.fsLayers[].blobSum' | grep -v 'a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4'); do
 
   echo "Indexing layer ${layer} ==> {\"Layer\":{\"Name\":\"${layer}\",\"Path\":\"http://${REGISTRY}/v2/${IMAGE}/blobs/${layer}\",\"Format\":\"Docker\"}}"
 
