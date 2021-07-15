@@ -53,7 +53,7 @@ def main():
         return CRIT
 
     if response.status_code != 200:
-        print('ERROR: response from {0} docker registry = {1}'.format(response.status_code, registry))
+        print('ERROR: response from {0} docker registry = {1}'.format(registry, response.status_code))
         return CRIT
 
     data = json.loads(response.text)
