@@ -50,7 +50,7 @@ for layer in $(curl -s ${manifests} | jq -r '.fsLayers[].blobSum' | grep -v 'a3e
 
   no_layer=$(echo ${clair_response} | grep "could not find layer" | wc -l)
 
-  if [ "$no_layer" -eq "0" ] ; then
+  if [ "$no_layer" -eq "1" ] ; then
     echo "MESSAGE: could not find layer"
     continue
   fi
