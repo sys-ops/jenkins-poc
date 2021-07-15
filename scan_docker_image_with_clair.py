@@ -49,7 +49,7 @@ def main():
     try:
         response = requests.get(manifests)
     except requests.RequestException as e:
-        print('ERROR: ' + str(e))
+        pprint('ERROR: {0}\n'.format(str(e)))
         return CRIT
 
     if response.status_code != 200:
@@ -98,7 +98,7 @@ def main():
         try:
             response = requests.post('http://{0}/v1/layers'.format(clair), json=payload)
         except requests.RequestException as e:
-            print('ERROR: ' + str(e))
+            print('ERROR: {0}\n'.format(str(e)))
             return CRIT
 
         if verbose and 'could not find layer' in response.text:
@@ -112,7 +112,7 @@ def main():
         try:
             response = requests.get('http://{0}/v1/layers/{1}?vulnerabilities'.format(clair, layer))
         except requests.RequestException as e:
-            print('ERROR: ' + str(e))
+            print('ERROR: {0}\n'.format(str(e)))
             return CRIT
 
         vulnerabilities = json.loads(response.text)
