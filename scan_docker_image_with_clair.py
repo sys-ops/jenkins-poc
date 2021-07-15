@@ -142,11 +142,11 @@ def main():
                             all_vulnerabilities[name]['Link'] = link
                             all_vulnerabilities[name]['Severity'] = severity
 
-                        # count all vulnerabilities by the severity level
-                        if severity in severities:
-                            severities[severity] += 1
-                        else:
-                            severities[severity] = 1
+                            # count all vulnerabilities by the severity level
+                            if severity in severities:
+                                severities[severity] += 1
+                            else:
+                                severities[severity] = 1
 
     minimum_level = False
 
@@ -163,6 +163,8 @@ def main():
                 print('Description: {0}'.format(all_vulnerabilities[vulnerability]['Description']))
                 print('Link: {0}'.format(all_vulnerabilities[vulnerability]['Link']))
                 print('-----------------------------------------\n')
+
+    print('Found {0} vulnerabilities\n'.format(len(all_vulnerabilities)))
 
     # print all vulnerabilities by the severity level
     for severity in ['Unknown', 'Negligible', 'Low', 'Medium', 'High', 'Critical']:
