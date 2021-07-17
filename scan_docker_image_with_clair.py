@@ -21,9 +21,9 @@ def main():
 
     # command line options (arguments)
     argp.add_argument('-c', '--clair', dest='clair', type=str, metavar='STRING',
-                      help='Clair URL', required=False, default='localhost:6060')
+                      help='Clair URL', required=False, default='http://localhost:6060')
     argp.add_argument('-r', '--registry', dest='registry', type=str, metavar='STRING',
-                      help='Docker Registry URL', required=False, default='localhost:5000')
+                      help='Docker Registry URL', required=False, default='http://localhost:5000')
     argp.add_argument('-i', '--image-name', dest='image', type=str, metavar='STRING',
                       help='Docker image name', required=False, default='nginx')
     argp.add_argument('-t', '--image-tag', dest='tag', type=str, metavar='STRING',
@@ -44,7 +44,7 @@ def main():
     level = args.level
     verbose = args.verbose
 
-    manifests='http://{0}/v2/{1}/manifests/{2}'.format(registry, image, tag)
+    manifests='{0}/v2/{1}/manifests/{2}'.format(registry, image, tag)
 
     try:
         response = requests.get(manifests)
@@ -90,13 +90,13 @@ def main():
 
     # perform indexing of layers by Clair
     for layer in layers:
-        payload = {"Layer": {"Name": "{0}".format(layer), "Path": "http://{0}/v2/{1}/blobs/{2}".format(registry, image, tag), "Format": "Docker"}}
+        payload = {"Layer": {"Name": "{0}".format(layer), "Path": "{0}/v2/{1}/blobs/{2}".format(registry, image, tag), "Format": "Docker"}}
 
         if verbose:
             print('\tIndexing new layer {0}\n'.format(layer))
 
         try:
-            response = requests.post('http://{0}/v1/layers'.format(clair), json=payload)
+            response = requests.post('{0}/v1/layers'.format(clair), json=payload)
         except requests.RequestException as e:
             print('ERROR: {0}\n'.format(str(e)))
             return CRIT
@@ -110,7 +110,7 @@ def main():
 
         # get a result of found vulnerabilities in the layer
         try:
-            response = requests.get('http://{0}/v1/layers/{1}?vulnerabilities'.format(clair, layer))
+            response = requests.get('{0}/v1/layers/{1}?vulnerabilities'.format(clair, layer))
         except requests.RequestException as e:
             print('ERROR: {0}\n'.format(str(e)))
             return CRIT
@@ -170,7 +170,6 @@ def main():
     for severity in ['Unknown', 'Negligible', 'Low', 'Medium', 'High', 'Critical']:
         if severity in severities:
             print('{0}: {1}'.format(severity, severities[severity]))
-
 
     return OK
 
