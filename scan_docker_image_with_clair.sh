@@ -17,7 +17,7 @@ CLAIR=$4
 
 high_vulnerabilities_found=0
 
-manifests="http://${REGISTRY}/v2/${IMAGE}/manifests/${TAG}"
+manifests="${REGISTRY}/v2/${IMAGE}/manifests/${TAG}"
 
 echo "manifests = ${manifests}"
 
@@ -27,7 +27,7 @@ curl -sv ${manifests}
 
 echo "===END manifests response"
 
-schema_version=$(curl -s "http://${REGISTRY}/v2/${IMAGE}/manifests/${TAG}" | jq -r '.schemaVersion')
+schema_version=$(curl -s "${manifests}" | jq -r '.schemaVersion')
 
 if [ -z "${schema_version}" ] ; then
   echo "Cannot get schema version from ${REGISTRY} registry!"
@@ -43,10 +43,10 @@ fi
 
 for layer in $(curl -s ${manifests} | jq -r '.fsLayers[].blobSum' | grep -v 'a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4'); do
 
-  echo "Indexing layer ${layer} ==> {\"Layer\":{\"Name\":\"${layer}\",\"Path\":\"http://${REGISTRY}/v2/${IMAGE}/blobs/${layer}\",\"Format\":\"Docker\"}}"
+  echo "Indexing layer ${layer} ==> {\"Layer\":{\"Name\":\"${layer}\",\"Path\":\"${REGISTRY}/v2/${IMAGE}/blobs/${layer}\",\"Format\":\"Docker\"}}"
 
   # let CLAIR analyze docker image composed by only one "scannable" layer
-  clair_response=$(curl -s -X POST http://${CLAIR}/v1/layers -d "{\"Layer\":{\"Name\":\"${layer}\",\"Path\":\"http://${REGISTRY}/v2/${IMAGE}/blobs/${layer}\",\"Format\":\"Docker\"}}")
+  clair_response=$(curl -s -X POST ${CLAIR}/v1/layers -d "{\"Layer\":{\"Name\":\"${layer}\",\"Path\":\"${REGISTRY}/v2/${IMAGE}/blobs/${layer}\",\"Format\":\"Docker\"}}")
 
   no_layer=$(echo ${clair_response} | grep "could not find layer" | wc -l)
 
@@ -58,9 +58,9 @@ for layer in $(curl -s ${manifests} | jq -r '.fsLayers[].blobSum' | grep -v 'a3e
   # get a result of found vulnerabilities in the layer by calling the endpoint http://${CLAIR}/v1/layers/${layer}
   echo "Getting results of found vulnerabilities in the layer ${layer}"
 
-  curl -s "http://${CLAIR}/v1/layers/${layer}?vulnerabilities" | jq | grep -B 5 -A 17 'Severity": "'
+  curl -s "${CLAIR}/v1/layers/${layer}?vulnerabilities" | jq | grep -B 5 -A 17 'Severity": "'
 
-  resp_count=$(curl -s "http://${CLAIR}/v1/layers/${layer}?vulnerabilities" | jq | grep -B 5 -A 17 'Severity": "High' | wc -c)
+  resp_count=$(curl -s "${CLAIR}/v1/layers/${layer}?vulnerabilities" | jq | grep -B 5 -A 17 'Severity": "High' | wc -c)
 
   if [ "${resp_count}" -gt 10 ] ; then
     high_vulnerabilities_found=1
